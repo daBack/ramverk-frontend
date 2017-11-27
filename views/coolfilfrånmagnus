@@ -1,0 +1,137 @@
+/**
+ * Imports
+ */
+import React, {Component} from 'react';
+import {ScrollView, AsyncStorage, TouchableOpacity, StyleSheet, View, ActivityIndicator} from 'react-native';
+import {Tile, List, ListItem} from 'react-native-elements';
+import {Text} from 'react-native';
+
+
+
+
+/**
+ * Hämtar och ritar ut event feed
+ */
+
+class EventFeed extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            isLoading: true,
+            data: []
+        }
+    }
+    //
+
+
+
+    /**
+     * Hämtar data om event feed från facebook också lägger det i this.state.data.
+     */
+    async componentWillMount() {
+        console.log(this.props.navigation.state.params);
+        return await fetch("https://graph.facebook.com/" +   this.props.navigation.state.params.id + "/?fields=feed&access_token=EAAMRLoVeD2ABAJoYp9AvHqJaS38rAZCdQfvZAYANyWsK6SXsD9wv5xdyR7Rdtaz9RiZBDytOCGYjVDgAcZAPcQMSZAWMYbb5xrgCkMGw11xmRyjMLyaDXUYZCra4U5mAjlrS5lG4VtUAUS2qN1EsmuebRKHZCPp9dYZD")
+        .then((response) => response.json())
+        .then((responseJson) => {
+            console.log(responseJson.feed.data);
+            this.setState({
+                data: responseJson.feed.data,
+                isLoading: false
+            }, function () {
+                console.log(this.state.data);
+            });
+        })
+        .catch((error) => {
+            console.error(error);
+        })
+    }
+
+
+
+    /**
+     * Renderar innehållet.
+     */
+    render() {
+        /**
+         * Kollar om data hämtas.
+         */
+        if (this.state.isLoading) {
+            return (
+                <View style={{flex: 1, paddingTop: 20}}>
+                    <ActivityIndicator/>
+                </View>
+            );
+        }
+
+        /**
+         * Ritar ut alla kommentarer.
+         */
+        contents = this.state.data.map(function (feed) {
+        return (
+          <View key={feed.id} style={styles.content}>
+            <Text style={[styles.textColor, styles.text]}>{feed.message}</Text>
+            <Text style={[styles.textColor, styles.text]}>{feed.updated_time}</Text>
+          </View>
+        );
+     });
+
+        /* Ritar ut innehållet på skärmen. */
+        return (
+            <ScrollView>
+                <View style={styles.containerView}>
+                    <View>
+                    <Text style={styles.header}>Feed</Text>
+                    </View>
+                    <View>
+                        { contents }
+                    </View>
+                 </View>
+            </ScrollView>
+        )
+    }
+}
+
+export default EventFeed;
+
+
+/**
+ * StyleSheet
+ */
+const styles = StyleSheet.create({
+    content: {
+        marginBottom: 10,
+        backgroundColor: '#c2bebb'
+    },
+    header: {
+        marginTop: 10,
+        fontSize: 30
+    },
+    text: {
+        padding: 10
+    },
+    textColor: {
+        color: "white"
+    },
+    containerView: {
+
+    },
+   container: {
+      paddingTop: 23
+   },
+   input: {
+      margin: 15,
+      height: 40,
+      borderColor: '#7a42f4',
+      borderWidth: 1
+   },
+   eventFeedButton: {
+      backgroundColor: '#7a42f4',
+      padding: 10,
+      margin: 15,
+      height: 40,
+   },
+   eventFeedText: {
+     color: 'black'
+   }
+})
